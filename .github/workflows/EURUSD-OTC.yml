@@ -1,10 +1,10 @@
-name: M1 EURJPY
+name: M1 EURUSD-OTC
 
 on:
   workflow_dispatch:
 
 jobs:
-  EURJPY:
+  EURUSD-OTC:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,12 +21,12 @@ jobs:
           pip install -U git+git://github.com/Lu-Yi-Hsun/iqoptionapi.git
 
       - name: Run Script
-        run: python run.py PRACTICE EURJPY
+        run: python run.py PRACTICE EURUSD-OTC
         env:
           IQU: ${{ secrets.IQU }}
           IQO: ${{ secrets.IQP }}
 
       - uses: actions/upload-artifact@v2
         with:
-          name: EURJPY
+          name: EURUSD-OTC
           path: logs/
