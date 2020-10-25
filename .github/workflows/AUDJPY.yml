@@ -24,7 +24,7 @@ jobs:
         run: python index.py PRACTICE AUDJPY
         env:
           IQU: ${{ secrets.IQU }}
-          IQO: ${{ secrets.IQP }}
+          IQP: ${{ secrets.IQP }}
 
       - uses: actions/upload-artifact@v2
         with:
