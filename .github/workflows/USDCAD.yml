@@ -21,7 +21,7 @@ jobs:
           pip install -U git+git://github.com/Lu-Yi-Hsun/iqoptionapi.git
 
       - name: Run Script
-        run: python run.py PRACTICE USDCAD
+        run: python index.py PRACTICE USDCAD
         env:
           IQU: ${{ secrets.IQU }}
           IQO: ${{ secrets.IQP }}
