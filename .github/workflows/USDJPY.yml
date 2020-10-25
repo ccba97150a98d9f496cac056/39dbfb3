@@ -1,0 +1,30 @@
+name: M1 USDJPY
+
+on:
+  workflow_dispatch:
+
+jobs:
+  USDJPY:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "2.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install python-dateutil
+          pip install -U git+git://github.com/Lu-Yi-Hsun/iqoptionapi.git
+
+      - name: Run Script
+        run: python run.py PRACTICE USDJPY
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: USDJPY
+          path: logs/
