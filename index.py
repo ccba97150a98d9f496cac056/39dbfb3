@@ -110,7 +110,22 @@ def getAverageCandleVolume(candles):
 
 
 def whatTheCandleIs(vela):
-    return candleGREEN if vela['open'] < vela['close'] else candleRED if vela['open'] > vela['close'] else candleNule
+    open = vela['open']
+    close = vela['close']
+    
+    if close > open:
+        # Green
+        if close - open >= 1:
+            return candleGREEN
+        else:
+            return candleNule
+    else:
+        if open - close <= -1:
+            # red
+            return candleRED
+        else:
+            return candleNule
+    # return candleGREEN if vela['open'] < vela['close'] else candleRED if vela['open'] > vela['close'] else candleNule
 
 
 def getCandleSequence(candles):
@@ -278,8 +293,12 @@ while True:
                         LOGS = extractResultData(
                             candleSequence, candles, direction, enterValue, resultValue, tradeTime)
 
+                        timeStr = "{}".format(tradeTime)
+                        timeStr = timeStr.replace(":","_")
+                        timeStr = timeStr.replace("+","_")
+                        timeStr = timeStr.replace(" ","-")
                         saveJSONFile(
-                            "./logs/v3.{}.{}.json".format(TRADE.getCurrency(), tradeTime), LOGS)
+                            "./logs/v3.{}.{}.json".format(TRADE.getCurrency(), timeStr), LOGS)
 
                         break
 
