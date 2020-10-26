@@ -72,14 +72,15 @@ class IQ:
         seconds = int(serverTime.strftime('%S'))
 
         if seconds < 20:
-          time.sleep(20)
+            time.sleep(20)
         elif seconds < 30:
-          time.sleep(10)
-        
-        goTrade = True if (seconds >= 48 and seconds <= 50) or seconds >= 58 else False
+            time.sleep(10)
+
+        goTrade = True if (seconds >= 48 and seconds <=
+                           50) or seconds >= 58 else False
         if goTrade == False:
-          time.sleep(1)
-          
+            time.sleep(1)
+
         return goTrade
 
 
@@ -190,7 +191,6 @@ while True:
 
         GR = "g{}_r{}".format(greens, reds)
 
-        # Call
         isG9R1 = True if GR == 'g8_r2' else False  # 80%
         isG8R2 = True if GR == 'g8_r2' else False  # 70%
         if isG9R1 or isG8R2:
@@ -198,13 +198,6 @@ while True:
                 isG9R1 if isG9R1 else isG8R2, candleVolume, direction))
             direction = BUY_OPERATION
 
-        isG7R3 = True if GR == 'g7_r3' else False  # 70%
-        if (isG7R3):
-            direction = BUY_OPERATION if candleVolume > 0 else SELL_OPERATION
-            print("isG7R3 and the volume is {}, so {}".format(
-                candleVolume, direction))
-
-        # Put
         isG1R9 = True if GR == 'g8_r2' else False  # 80%
         isG2R8 = True if GR == 'g8_r2' else False  # 70%
         if isG1R9 or isG2R8:
@@ -212,16 +205,27 @@ while True:
                 isG1R9 if isG1R9 else isG2R8, candleVolume, direction))
             direction = SELL_OPERATION
 
+        isG7R3 = True if GR == 'g7_r3' else False  # 70%
+        if (isG7R3):
+            direction = BUY_OPERATION if candleVolume > 0 else SELL_OPERATION
+            print("isG7R3 and the volume is {}, so {}".format(
+                round(candleVolume, 6), direction))
+
         isG3R7 = True if GR == 'g3_r7' else False  # 70%
         if (isG3R7):
             direction = SELL_OPERATION if candleVolume < 0 else BUY_OPERATION
             print("isG3R7 and the volume is {}, so {}".format(
-                round(candleVolume, 4), direction))
+                round(candleVolume, 6), direction))
+        
+        print("candles is 0.0 something? ", True if candleVolume > -1 and candleVolume < 1 else False)
+        if candleVolume > -1 and candleVolume < 1:
+            direction == False
+            print("Candles volume not increase/descrease too much")
 
         if direction == False:
             NO_ACTION_TAKE_COUNTER += 1
 
-            if NO_ACTION_TAKE_COUNTER > 30:
+            if NO_ACTION_TAKE_COUNTER > 60:
                 print("Active is Ending because NO_ACTION_TAKE_COUNTER is {}!".format(
                     NO_ACTION_TAKE_COUNTER))
                 sys.exit()
