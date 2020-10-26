@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Sequence
 from iqoptionapi.stable_api import IQ_Option
 from datetime import datetime
 from dateutil import tz
