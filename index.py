@@ -6,6 +6,7 @@ import time
 import sys
 import os
 import json
+import math
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""" API  """""""""""""""""""""""""""""""""""""""""""""""""""
@@ -38,16 +39,9 @@ class IQ:
         return self.api.get_balance()
 
     def getEnterValue(self):
-        return 2.0
-
-        # valor_entrada = bancaFloor() if int(banca()) > 20 else 2
-        #
-        # divided_by = 36
-        # banca_balance = banca()
-        # if (banca_balance > divided_by * 2):
-        #     return float(int(banca()) // divided_by);
-
-        # return float(int(banca()) // (divided_by / 3));
+        banca = self.getBalance()
+        bancaFloor = math.floor(banca / 40)
+        return bancaFloor if int(banca) > 40 else 2.0
         # Limited to $USD 2
 
     def getServerDatetime(self):
@@ -96,7 +90,9 @@ candleNule = '-'
 def getCandleTotalVolumeFinal(candles):
     v = 0
     for candle in candles:
-        v = float(candle['close']) - float(candle['open'])
+        substract = float(candle['close'] - candle['open'])
+        print("substract: {}".format(substract))
+        v += substract
     return v
 
 
@@ -109,22 +105,18 @@ def getAverageCandleVolume(candles):
     return v / 10
 
 
-def whatTheCandleIs(vela):
-    open = vela['open']
-    close = vela['close']
-    
-    if close > open:
-        # Green
-        if close - open >= 1:
-            return candleGREEN
-        else:
-            return candleNule
+def whatTheCandleIs(candle):
+    open = candle['open']
+    close = candle['close']
+
+    volume = float(close - open)
+
+    if volume >= 0:
+        return candleGREEN
+    elif volume <= 0:
+        return candleRED
     else:
-        if open - close <= -1:
-            # red
-            return candleRED
-        else:
-            return candleNule
+        return candleNule
     # return candleGREEN if vela['open'] < vela['close'] else candleRED if vela['open'] > vela['close'] else candleNule
 
 
@@ -148,18 +140,6 @@ def getCandleSequenceString(candles):
     return " ".join(candlesList)
 
 
-def extractResultData(candlesSequence, candleOrigin, direction, enterValue, resultValue, date):
-    return {
-        "result": "gain" if resultValue > 0 else "lose",
-        "entrada": enterValue,
-        "value": round(resultValue, 2),
-        "sequencia": candlesSequence,
-        "candles": candleOrigin,
-        "direction": direction,
-        "date": "{}".format(date)
-    }
-
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""     FOR JSON FILES     """""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -178,18 +158,20 @@ def saveJSONFile(path, obj):
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""""""""""""""""""""""""   THE REAL OPERATION   """""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-RESULTS = {"GAIN": 0, "LOST": 0, "TOTAL": 0}
+RESULTS = {"GAIN": 0, "LOST": 0, "BALANCE": 0}
 
 TRADE = IQ()
 
-print('Valor da Banca é {} - Trade atual é {}, com valor de entrada definido em {} '.format(
+print("aaaa:",TRADE.getEnterValue)
+print('Valor da Banca é {} - Trade atual é {}, com valor de entrada definido em {}'.format(
     TRADE.getBalance(), TRADE.getCurrency(), TRADE.getEnterValue()))
 
 NO_ACTION_TAKE_COUNTER = 0
 
 while True:
-    if RESULTS["TOTAL"] > 20:
+    if RESULTS["GAIN"] + RESULTS['LOST'] > 20:
         print("20 operations has been made. Now is time to analytics!")
+        break
 
     if TRADE.shouldEntry():
         print('--------')
@@ -199,7 +181,7 @@ while True:
 
         candles = TRADE.getCandles()
 
-        candleVolume = getCandleTotalVolumeFinal(candles)
+        candleVolumeTotal = getCandleTotalVolumeFinal(candles)
         candleSequence = getCandleSequenceString(candles)
         greens = candleSequence.count(candleGREEN)
         reds = candleSequence.count(candleRED)
@@ -210,42 +192,45 @@ while True:
         isG8R2 = True if GR == 'g8_r2' else False  # 70%
         if isG9R1 or isG8R2:
             print("{} and the volume is {}, so {}".format(
-                isG9R1 if isG9R1 else isG8R2, candleVolume, direction))
+                isG9R1 if isG9R1 else isG8R2, candleVolumeTotal, direction))
             direction = BUY_OPERATION
 
         isG1R9 = True if GR == 'g8_r2' else False  # 80%
         isG2R8 = True if GR == 'g8_r2' else False  # 70%
         if isG1R9 or isG2R8:
             print("{} and the volume is {}, so {}".format(
-                isG1R9 if isG1R9 else isG2R8, candleVolume, direction))
+                isG1R9 if isG1R9 else isG2R8, candleVolumeTotal, direction))
             direction = SELL_OPERATION
 
         isG7R3 = True if GR == 'g7_r3' else False  # 70%
         if (isG7R3):
-            direction = BUY_OPERATION if candleVolume > 0 else SELL_OPERATION
+            direction = BUY_OPERATION if candleVolumeTotal > 0 else SELL_OPERATION
             print("isG7R3 and the volume is {}, so {}".format(
-                round(candleVolume, 6), direction))
+                round(candleVolumeTotal, 6), direction))
 
         isG3R7 = True if GR == 'g3_r7' else False  # 70%
         if (isG3R7):
-            direction = SELL_OPERATION if candleVolume < 0 else BUY_OPERATION
+            direction = SELL_OPERATION if candleVolumeTotal < 0 else BUY_OPERATION
             print("isG3R7 and the volume is {}, so {}".format(
-                round(candleVolume, 6), direction))
-        
-        print("candles is 0.0 something? ", True if candleVolume > -1 and candleVolume < 1 else False)
-        if candleVolume > -1 and candleVolume < 1:
+                round(candleVolumeTotal, 6), direction))
+
+        print("candles is 0.0 something? ", True if candleVolumeTotal > -
+              1 and candleVolumeTotal < 1 else False)
+
+        if candleVolumeTotal > -1 and candleVolumeTotal < 1:
             direction == False
-            print("Candles volume not increase/descrease too much")
+            print(
+                "Candles volume not increase/descrease too much => {}".format(candleVolumeTotal))
 
         if direction == False:
             NO_ACTION_TAKE_COUNTER += 1
 
-            if NO_ACTION_TAKE_COUNTER > 60:
+            if NO_ACTION_TAKE_COUNTER > 100:
                 print("Active is Ending because NO_ACTION_TAKE_COUNTER is {}!".format(
                     NO_ACTION_TAKE_COUNTER))
                 sys.exit()
             else:
-                print("No take action because directions can variate")
+                print("No take action")
 
             time.sleep(5)
             entrar = False
@@ -277,26 +262,35 @@ while True:
                         roundedValue = round(resultValue, 2)
 
                         if resultValue > 0:
-                            RESULTS["GAIN"] = RESULTS["GAIN"] + 1
-                            RESULTS["TOTAL"] = float(
-                                RESULTS["TOTAL"] + roundedValue)
+                            RESULTS["GAIN"] += 1
+                            RESULTS["BALANCE"] = float(
+                                RESULTS["BALANCE"] + roundedValue)
 
                             print("{} 🎉 +1 de {} - Resultados: {} 💰 e {} 💸  === 🤖 {}".format(
-                                GR, roundedValue, RESULTS["GAIN"], RESULTS["LOST"], RESULTS["TOTAL"]))
+                                GR, roundedValue, RESULTS["GAIN"], RESULTS["LOST"], RESULTS["BALANCE"]))
                         else:
-                            RESULTS["LOST"] = RESULTS["LOST"] + 1
-                            RESULTS["TOTAL"] = float(
-                                RESULTS["TOTAL"] + roundedValue)
+                            RESULTS["LOST"] += 1
+                            RESULTS["BALANCE"] = float(
+                                RESULTS["BALANCE"] + roundedValue)
+                            
                             print("{} 💩 -1 de {} - Resultados: {} 💰 e {} 💸  === 🤖 {}".format(
-                                GR, roundedValue, RESULTS["GAIN"], RESULTS["LOST"], RESULTS["TOTAL"]))
+                                GR, roundedValue, RESULTS["GAIN"], RESULTS["LOST"], RESULTS["BALANCE"]))
 
-                        LOGS = extractResultData(
-                            candleSequence, candles, direction, enterValue, resultValue, tradeTime)
+                        LOGS = {
+                            "result": "gain" if resultValue > 0 else "lose",
+                            "entrada": enterValue,
+                            "value": round(resultValue, 2),
+                            "sequencia": candleSequence,
+                            "candles": candles,
+                            "direction": direction,
+                            "volumeTotal": candleVolumeTotal,
+                            "date": "{}".format(tradeTime)
+                        }
 
                         timeStr = "{}".format(tradeTime)
-                        timeStr = timeStr.replace(":","_")
-                        timeStr = timeStr.replace("+","_")
-                        timeStr = timeStr.replace(" ","-")
+                        timeStr = timeStr.replace(":", "_")
+                        timeStr = timeStr.replace("+", "_")
+                        timeStr = timeStr.replace(" ", "-")
                         saveJSONFile(
                             "./logs/v3.{}.{}.json".format(TRADE.getCurrency(), timeStr), LOGS)
 
