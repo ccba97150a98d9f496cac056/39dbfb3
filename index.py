@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from typing import Sequence
 from iqoptionapi.stable_api import IQ_Option
 from datetime import datetime
 from dateutil import tz
@@ -108,15 +109,15 @@ def whatTheCandleIs(candle):
     open = candle['open']
     close = candle['close']
 
-    volume = float(close - open)
+    volume = float(close - open)  * 1000
 
-    if volume >= 0:
-        return candleGREEN
-    elif volume <= 0:
-        return candleRED
-    else:
+    if volume > -1 and volume < 1:
         return candleNule
-    # return candleGREEN if vela['open'] < vela['close'] else candleRED if vela['open'] > vela['close'] else candleNule
+    
+    if  volume > 0:
+        return candleGREEN
+    
+    return candleRED
 
 
 def getCandleSequence(candles):
@@ -212,6 +213,12 @@ while True:
             print("isG3R7 and the volume is {}, so {}".format(
                 round(candleVolumeTotal, 6), direction))
 
+
+        nuleCandlesCount = candleSequence.count(candleNule)
+        if nuleCandlesCount > 1:
+            direction = False
+            print("{} nule candles".format(nuleCandlesCount))
+            
         """ 
         Multiply to 1000, to eliminate good porcentage from both,
         by the previus analytics, the total of 66% are loses
