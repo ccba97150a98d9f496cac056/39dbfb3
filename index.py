@@ -91,7 +91,6 @@ def getCandleTotalVolumeFinal(candles):
     v = 0
     for candle in candles:
         substract = float(candle['close'] - candle['open'])
-        print("substract: {}".format(substract))
         v += substract
     return v
 
@@ -162,7 +161,6 @@ RESULTS = {"GAIN": 0, "LOST": 0, "BALANCE": 0}
 
 TRADE = IQ()
 
-print("aaaa:",TRADE.getEnterValue)
 print('Valor da Banca é {} - Trade atual é {}, com valor de entrada definido em {}'.format(
     TRADE.getBalance(), TRADE.getCurrency(), TRADE.getEnterValue()))
 
@@ -214,13 +212,15 @@ while True:
             print("isG3R7 and the volume is {}, so {}".format(
                 round(candleVolumeTotal, 6), direction))
 
-        print("candles is 0.0 something? ", True if candleVolumeTotal > -
-              1 and candleVolumeTotal < 1 else False)
-
-        if candleVolumeTotal > -1 and candleVolumeTotal < 1:
-            direction == False
-            print(
-                "Candles volume not increase/descrease too much => {}".format(candleVolumeTotal))
+        """ 
+        Multiply to 1000, to eliminate good porcentage from both,
+        by the previus analytics, the total of 66% are loses
+        """
+        calcVolumeWorth = candleVolumeTotal * 1000
+        print("{} with volume {} on {}".format(direction, calcVolumeWorth,GR))
+        if calcVolumeWorth > -1 and calcVolumeWorth < 1:
+            direction = False
+            print("Accuracy is too low - {}".format(calcVolumeWorth))
 
         if direction == False:
             NO_ACTION_TAKE_COUNTER += 1
