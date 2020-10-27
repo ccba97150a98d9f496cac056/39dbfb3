@@ -7,6 +7,17 @@ import sys
 import os
 import json
 import math
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""   PARAMS   """""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" 
+ENVS: 
+[1] = ["REAL" | "PRACTICE"] -> Balance
+[2] = ["USDJPY | ...] -> Currency
+
+"""
+ARG_BALANCE = sys.argv[1]
+ARG_CURRENCY = sys.argv[2]
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""" API  """""""""""""""""""""""""""""""""""""""""""""""""""
@@ -20,8 +31,8 @@ class IQ:
     def __init__(self):
         self.api = IQ_Option(os.environ["IQU"], os.environ["IQP"])
         self.api.connect()
-        self.api.change_balance(sys.argv[1])  # REAL | PRACTICE
-        self.currency = sys.argv[2]
+        self.api.change_balance(ARG_BALANCE)
+        self.currency = ARG_CURRENCY
 
         while True:
             if self.api.check_connect() == False:
@@ -49,11 +60,11 @@ class IQ:
         hora = datetime.strptime(datetime.utcfromtimestamp(
             serverTime).strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
         return hora.replace(tzinfo=tz.gettz('GMT'))
-
+    
     def getCandles(self, rangeTime=60, quant=10):
         return self.api.get_candles(self.currency, rangeTime, quant, self.api.get_server_timestamp())
 
-    def buyDigitalSpot(self, direction):
+    def buyDigital(self, direction):
         return self.api.buy_digital_spot(self.currency, self.getEnterValue(), direction, 1)
 
     def checkResult(self, id):
@@ -104,33 +115,33 @@ def getAverageCandleVolume(candles):
     return v / 10
 
 
-def whatTheCandleIs(candle):
+def whatTheCandleIs(candle, variante):
     open = candle['open']
     close = candle['close']
 
-    volume = float(close - open)  * 1000
+    volume = float(close - open) * 1000
 
-    if volume > -1 and volume < 1:
+    if volume > (-(variante)) and volume < variante:
         return candleNule
-    
-    if  volume > 0:
+
+    if volume > 0:
         return candleGREEN
-    
+
     return candleRED
 
 
 def getCandleSequence(candles):
     return [
-        whatTheCandleIs(candles[0]),
-        whatTheCandleIs(candles[1]),
-        whatTheCandleIs(candles[2]),
-        whatTheCandleIs(candles[3]),
-        whatTheCandleIs(candles[4]),
-        whatTheCandleIs(candles[5]),
-        whatTheCandleIs(candles[6]),
-        whatTheCandleIs(candles[7]),
-        whatTheCandleIs(candles[8]),
-        whatTheCandleIs(candles[9])
+        whatTheCandleIs(candles[0], 0.5),
+        whatTheCandleIs(candles[1], 0.5),
+        whatTheCandleIs(candles[2], 0.5),
+        whatTheCandleIs(candles[3], 0.5),
+        whatTheCandleIs(candles[4], 0.5),
+        whatTheCandleIs(candles[5], 0.5),
+        whatTheCandleIs(candles[6], 0.5),
+        whatTheCandleIs(candles[7], 0.5),
+        whatTheCandleIs(candles[8], 0.5),
+        whatTheCandleIs(candles[9], 0.5)
     ]
 
 
@@ -212,18 +223,17 @@ while True:
             print("isG3R7 and the volume is {}, so {}".format(
                 round(candleVolumeTotal, 6), direction))
 
-
         nuleCandlesCount = candleSequence.count(candleNule)
         if nuleCandlesCount > 1:
             direction = False
             print("{} nule candles".format(nuleCandlesCount))
-            
+
         """ 
         Multiply to 1000, to eliminate good porcentage from both,
         by the previus analytics, the total of 66% are loses
         """
         calcVolumeWorth = candleVolumeTotal * 1000
-        print("{} with volume {} on {}".format(direction, calcVolumeWorth,GR))
+        print("{} with volume {} on {}".format(direction, calcVolumeWorth, GR))
         if calcVolumeWorth > -1 and calcVolumeWorth < 1:
             direction = False
             print("Accuracy is too low - {}".format(calcVolumeWorth))
@@ -248,7 +258,7 @@ while True:
             enterValue = TRADE.getEnterValue()
             tradeTime = TRADE.getServerDatetime()
 
-            spotSTATUS, spotID = TRADE.buyDigitalSpot(direction)
+            spotSTATUS, spotID = TRADE.buyDigital(direction)
 
             if type(spotID) != int:
                 if 'message' in spotID:
@@ -278,7 +288,7 @@ while True:
                             RESULTS["LOST"] += 1
                             RESULTS["BALANCE"] = float(
                                 RESULTS["BALANCE"] + roundedValue)
-                            
+
                             print("{} 💩 -1 de {} - Resultados: {} 💰 e {} 💸  === 🤖 {}".format(
                                 GR, roundedValue, RESULTS["GAIN"], RESULTS["LOST"], RESULTS["BALANCE"]))
 
