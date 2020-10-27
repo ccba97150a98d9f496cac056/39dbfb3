@@ -15,7 +15,9 @@ jobs:
           python-version: "2.x"
 
       - name: Install dependencies
-        run: ./.github/install.sh
+        run: |
+          chmod +x ./.github
+          ./.github/install.sh
 
       - name: Run Script
         run: python index.py PRACTICE NZDUSD-OTC
