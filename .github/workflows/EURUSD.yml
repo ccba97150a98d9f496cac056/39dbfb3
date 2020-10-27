@@ -21,7 +21,7 @@ jobs:
           pip install python-dateutil
 
       - name: Run Script
-        run: python index.py PRACTICE EURUSD
+        run: python index.py PRACTICE EURUSD 1
         env:
           IQU: ${{ secrets.IQU }}
           IQP: ${{ secrets.IQP }}
