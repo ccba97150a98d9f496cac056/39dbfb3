@@ -1,0 +1,31 @@
+name: M1 USDJPY
+
+on:
+  workflow_dispatch:
+
+jobs:
+  USDJPY:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "2.x"
+
+      - name: Install dependencies
+        run: |
+          chmod +x ./.github/install.sh
+          ./.github/install.sh
+
+      - name: Run Script
+        run: python index.py PRACTICE USDJPY
+        env:
+          IQU: ${{ secrets.IQU }}
+          IQP: ${{ secrets.IQP }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: USDJPY
+          path: logs/

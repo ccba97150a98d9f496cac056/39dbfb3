@@ -1,0 +1,31 @@
+name: M1 EURUSD-OTC
+
+on:
+  workflow_dispatch:
+
+jobs:
+  EURUSD-OTC:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "2.x"
+
+      - name: Install dependencies
+        run: |
+          chmod +x ./.github/install.sh
+          ./.github/install.sh
+
+      - name: Run Script
+        run: python index.py PRACTICE EURUSD-OTC
+        env:
+          IQU: ${{ secrets.IQU }}
+          IQP: ${{ secrets.IQP }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: EURUSD-OTC
+          path: logs/
