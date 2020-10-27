@@ -18,6 +18,7 @@ ENVS:
 """
 ARG_BALANCE = sys.argv[1]
 ARG_CURRENCY = sys.argv[2]
+ARG_DURATION = int(sys.argv[3])
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""" API  """""""""""""""""""""""""""""""""""""""""""""""""""
@@ -65,7 +66,7 @@ class IQ:
         return self.api.get_candles(self.currency, rangeTime, quant, self.api.get_server_timestamp())
 
     def buyDigital(self, direction):
-        return self.api.buy_digital_spot(self.currency, self.getEnterValue(), direction, 1)
+        return self.api.buy_digital_spot(self.currency, self.getEnterValue(), direction, ARG_DURATION)
 
     def checkResult(self, id):
         return self.api.check_win_digital_v2(id)
@@ -178,8 +179,12 @@ print('Valor da Banca é {} - Trade atual é {}, com valor de entrada definido e
 NO_ACTION_TAKE_COUNTER = 0
 
 while True:
-    if RESULTS["GAIN"] + RESULTS['LOST'] > 20:
-        print("20 operations has been made. Now is time to analytics!")
+    if RESULTS['LOST'] > 1:
+        print("Maximum loss is 2 gaming")
+        break
+    
+    if RESULTS["GAIN"] > 10:
+        print("Concept proved. Time to analytics!")
         break
 
     if TRADE.shouldEntry():
